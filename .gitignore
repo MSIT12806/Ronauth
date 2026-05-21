@@ -1,0 +1,32 @@
+# Backend build output
+code-backend/**/bin/
+code-backend/**/obj/
+code-backend/**/TestResults/
+code-backend/TestResults/
+
+# Test and coverage artifacts
+*.trx
+*.coverage
+*.coveragexml
+coverage/
+TestResult.xml
+
+# Local configuration overrides
+**/appsettings.Local.json
+**/appsettings.*.local.json
+.env
+.env.*
+*.local
+
+# Logs
+*.log
+
+# Editor and OS files
+.vs/
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.suo
+*.user
+*.userosscache

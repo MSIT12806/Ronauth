@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="RonAuth.Api.Tests/RonAuth.Api.Tests.csproj" />
+  <Project Path="RonAuth.Api/RonAuth.Api.csproj" />
+  <Project Path="RonAuth.Application/RonAuth.Application.csproj" />
+  <Project Path="RonAuth.Domain/RonAuth.Domain.csproj" />
+  <Project Path="RonAuth.Infrastructure/RonAuth.Infrastructure.csproj" />
+</Solution>
