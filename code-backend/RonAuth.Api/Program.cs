@@ -16,7 +16,7 @@ builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddRonAuthApplication();
-builder.Services.AddRonAuthInfrastructure();
+builder.Services.AddRonAuthInfrastructure(builder.Configuration, builder.Environment);
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));
 builder.Services.Configure<CrossSiteSessionOptions>(builder.Configuration.GetSection("CrossSiteSession"));
 builder.Services.Configure<PasswordPolicy>(builder.Configuration.GetSection("PasswordPolicy"));

@@ -12,7 +12,7 @@ public sealed class AuthApiTests
     [SetUp]
     public void SetUp()
     {
-        factory = new WebApplicationFactory<Program>();
+        factory = new RonAuthApiFactory();
     }
 
     [TearDown]
@@ -90,4 +90,5 @@ public sealed class AuthApiTests
                 && cookies.Any(item => item.Contains("ronauth.sid=", StringComparison.OrdinalIgnoreCase)), Is.True);
         });
     }
+
 }
