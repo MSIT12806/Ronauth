@@ -5,11 +5,20 @@ namespace RonAuth.Application.Models;
 
 public sealed record PasswordLoginCommand(string UserName, string Password);
 
+public sealed record RegisterUserCommand(string UserName, string Email, string Password);
+
 public sealed record SendOtpLoginCommand(string UserName, string ProviderName = "email");
 
 public sealed record VerifySecondFactorCommand(string TemporaryToken, string ProviderName, string VerificationCode);
 
 public sealed record ChangePasswordCommand(Guid UserId, string CurrentPassword, string NewPassword);
+
+public sealed class RegistrationResult
+{
+    public bool Succeeded { get; init; }
+    public AuthenticationResult? Authentication { get; init; }
+    public IReadOnlyDictionary<string, string[]> Errors { get; init; } = new Dictionary<string, string[]>();
+}
 
 public sealed class AuthenticationResult
 {

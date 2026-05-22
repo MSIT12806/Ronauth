@@ -388,7 +388,7 @@ RonAuth 應保留以下 extension points：
 
 **Actor**
 
-系統管理者，或被授權的上游系統。
+系統管理者、被授權的上游系統，或在 consuming app 啟用 self-service registration 時的未登入使用者。
 
 **Goal**
 
@@ -618,16 +618,16 @@ RonAuth 是純後端專案，因此每個 use case 最後都會落到 API 或等
 建議對應如下：
 
 ```text
-UC-01 -> POST /auth/login
-UC-02 -> POST /auth/verify-second-factor
-UC-03 -> POST /auth/send-otp, POST /auth/verify-otp
-UC-04 -> POST /auth/bootstrap
-UC-05 -> POST /auth/refresh
-UC-06 -> POST /auth/logout
-UC-07 -> GET /auth/me
-UC-08 -> POST /auth/change-password
-UC-09 -> POST /auth/2fa/enable, POST /auth/2fa/disable
-UC-10 -> POST /users
+UC-01 -> POST /api/auth/login
+UC-02 -> POST /api/auth/second-factor/verify
+UC-03 -> POST /api/auth/otp/send, POST /api/auth/second-factor/verify
+UC-04 -> GET /api/auth/bootstrap 或 GET /api/auth/session-restore
+UC-05 -> POST /api/auth/refresh
+UC-06 -> POST /api/auth/logout
+UC-07 -> GET /api/auth/me
+UC-08 -> POST /api/auth/password/change
+UC-09 -> PUT /api/auth/second-factor/{providerName}
+UC-10 -> POST /api/auth/register 或 POST /users
 UC-11 -> PUT /users/{id}/availability 或等價 API
 UC-12 -> PUT /users/{id}/accesses 或等價 API
 UC-13 -> POST /roles, PUT /roles/{id}, PUT /roles/{id}/permissions

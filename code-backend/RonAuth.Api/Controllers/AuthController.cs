@@ -26,6 +26,23 @@ public sealed class AuthController(
         return await BuildAuthenticationResponseAsync(result, cancellationToken);
     }
 
+    [HttpPost("register")]
+    public async Task<ActionResult<AuthenticationResponse>> RegisterAsync(
+        [FromBody] RegisterUserRequest request,
+        CancellationToken cancellationToken)
+    {
+        var result = await authenticationService.RegisterAsync(
+            new RegisterUserCommand(request.UserName, request.Email, request.Password),
+            cancellationToken);
+
+        if (!result.Succeeded || result.Authentication is null)
+        {
+            return BadRequest(new { errors = result.Errors });
+        }
+
+        return await BuildAuthenticationResponseAsync(result.Authentication, cancellationToken);
+    }
+
     [HttpPost("otp/send")]
     public async Task<ActionResult<AuthenticationResponse>> SendOtpAsync(
         [FromBody] SendOtpLoginRequest request,
@@ -44,6 +61,28 @@ public sealed class AuthController(
             new VerifySecondFactorCommand(request.TemporaryToken, request.ProviderName, request.VerificationCode),
             cancellationToken);
         return await BuildAuthenticationResponseAsync(result, cancellationToken);
+    }
+
+    [HttpGet("bootstrap")]
+    [HttpGet("session-restore")]
+    public async Task<ActionResult<AuthenticationResponse>> BootstrapAsync(CancellationToken cancellationToken)
+    {
+        var session = await GetActiveSessionAsync(cancellationToken);
+        if (session is null)
+        {
+            ClearSessionCookie();
+            return Unauthorized();
+        }
+
+        var result = await authenticationService.RefreshAccessTokenAsync(session.UserId, cancellationToken);
+        if (result.Status != LoginStatus.Success)
+        {
+            await sessionService.RevokeAsync(session.SessionId, cancellationToken);
+            ClearSessionCookie();
+            return Unauthorized();
+        }
+
+        return Ok(ToResponse(result));
     }
 
     [Authorize]
@@ -68,7 +107,7 @@ public sealed class AuthController(
             await sessionService.RevokeAsync(sessionId, cancellationToken);
         }
 
-        Response.Cookies.Delete(sessionOptions.Value.CookieName);
+        ClearSessionCookie();
         return NoContent();
     }
 
@@ -149,6 +188,21 @@ public sealed class AuthController(
             SameSite = options.CookieSecure ? SameSiteMode.None : SameSiteMode.Lax,
             Expires = DateTimeOffset.UtcNow.AddMinutes(options.SessionLifetimeMinutes),
         });
+    }
+
+    private void ClearSessionCookie()
+    {
+        Response.Cookies.Delete(sessionOptions.Value.CookieName);
+    }
+
+    private async Task<RonAuth.Domain.Sessions.AuthSession?> GetActiveSessionAsync(CancellationToken cancellationToken)
+    {
+        if (!Request.Cookies.TryGetValue(sessionOptions.Value.CookieName, out var sessionId) || string.IsNullOrWhiteSpace(sessionId))
+        {
+            return null;
+        }
+
+        return await sessionService.GetActiveAsync(sessionId, cancellationToken);
     }
 
     private bool TryGetUserId(out Guid userId)

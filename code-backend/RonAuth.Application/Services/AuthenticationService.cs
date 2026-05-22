@@ -18,6 +18,62 @@ public sealed class AuthenticationService(
     IOptions<JwtSettings> jwtSettings,
     TimeProvider timeProvider)
 {
+    public async Task<RegistrationResult> RegisterAsync(RegisterUserCommand command, CancellationToken cancellationToken)
+    {
+        var errors = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase);
+        if (string.IsNullOrWhiteSpace(command.UserName))
+        {
+            errors["userName"] = ["帳號為必填欄位"];
+        }
+
+        if (string.IsNullOrWhiteSpace(command.Email))
+        {
+            errors["email"] = ["電子郵件為必填欄位"];
+        }
+        else if (!command.Email.Contains('@', StringComparison.Ordinal))
+        {
+            errors["email"] = ["電子郵件格式不正確"];
+        }
+
+        if (!ValidatePassword(command.Password, out var passwordMessage))
+        {
+            errors["password"] = [passwordMessage];
+        }
+
+        var existingUser = await userRepository.GetByUserNameAsync(command.UserName, cancellationToken);
+        if (existingUser is not null)
+        {
+            errors["userName"] = ["帳號已被使用"];
+        }
+
+        if (errors.Count > 0)
+        {
+            return new RegistrationResult
+            {
+                Succeeded = false,
+                Errors = errors,
+            };
+        }
+
+        var user = new User
+        {
+            Id = Guid.NewGuid(),
+            UserName = command.UserName.Trim(),
+            Email = command.Email.Trim(),
+            IsLoginAllowed = true,
+            PasswordChangedAtUtc = timeProvider.GetUtcNow(),
+        };
+        user.PasswordHash = passwordHashService.HashPassword(user, command.Password);
+
+        await userRepository.CreateAsync(user, cancellationToken);
+
+        return new RegistrationResult
+        {
+            Succeeded = true,
+            Authentication = await BuildSuccessAsync(user, "register", user.UserName, cancellationToken),
+        };
+    }
+
     public async Task<AuthenticationResult> LoginAsync(PasswordLoginCommand command, CancellationToken cancellationToken)
     {
         var user = await userRepository.GetByUserNameAsync(command.UserName, cancellationToken);

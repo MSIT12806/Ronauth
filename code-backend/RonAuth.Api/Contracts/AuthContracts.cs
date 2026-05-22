@@ -2,6 +2,8 @@ namespace RonAuth.Api.Contracts;
 
 public sealed record PasswordLoginRequest(string UserName, string Password);
 
+public sealed record RegisterUserRequest(string UserName, string Email, string Password);
+
 public sealed record SendOtpLoginRequest(string UserName, string ProviderName = "email");
 
 public sealed record VerifySecondFactorRequest(string TemporaryToken, string ProviderName, string VerificationCode);
