@@ -3,6 +3,7 @@ code-backend/**/bin/
 code-backend/**/obj/
 code-backend/**/TestResults/
 code-backend/TestResults/
+code-backend/**/App_Data/
 
 # Test and coverage artifacts
 *.trx
